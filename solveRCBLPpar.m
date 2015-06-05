@@ -1,12 +1,19 @@
-function [fval2,thetaval2,betaval2,SE]=solveRCBLPpar(dtable,draws,theta0,bounds)
+function [fval2,thetaval2,betaval2,SE]=solveRCBLPpar(dtable,draws,theta0,extract_fun)
 % these can be modified
 ops=optimset('Display','iter' ,'Algorithm','Interior-Point','GradObj','on','DerivativeCheck','off');
 % This can be 'fixed-point' or 'newton': I recommend fixed-point.
 method = 'fixed-point';
 
-% These are bounds on parameters that are passed to the function
-lb= bounds.lb;
-ub= bounds.ub;
+% DO NOT modify below this line
+% 
+
+% This is the parameter extraction function
+get_params = str2func(extract_fun);
+
+% These are bounds on parameters that are set in the parameter extraction function
+init_param=get_params(theta0,draws);
+lb= init_param.lb;
+ub= init_param.ub;
 
 ns = length(draws.v);
 n=length(dtable.x1);
@@ -19,10 +26,7 @@ theta0 = [ones(K,1)];
 W=(Z'*Z)\eye(size(Z,2));
 
 % This bit just checks that the derivatives match the numeric ones
-deps = 1e-5;
-[gstar]=myDerivCheck(f,theta0)
-[fval,gval] = f(theta0);
-[gstar gval]
+myDerivCheck(f,theta0,1e-5)
 
 tic
 % first step
@@ -46,7 +50,7 @@ save first-step.mat
         %[that]=knitromatlab(f,x0,[],[],[],[],lb,ub,[],[],ops);
         
         % After optimization recover the linear parameters and objective 
-        thetahat =extract_params(that,draws);
+        thetahat =get_params(that,draws);
         delta=solveAllShares(tableA,draws,thetahat,method);
         dtable.delta=delta;
         [beta,resid]=ivregression(delta,X,Z,W);
@@ -56,7 +60,7 @@ save first-step.mat
     % evaluate the GMM objective and its gradient once
     function [fval,g]=evalSingle(theta)
         % this extracts the parameters for your specification
-        p = extract_params(theta,draws);
+        p = get_params(theta,draws);
         [delta,Jac]=solveAllShares(dtable,draws,p,method);
         dtable.delta=delta;
         [beta,resid]=ivregression(delta,X,Z,W);
@@ -67,7 +71,7 @@ save first-step.mat
 
     function [S,SE]=getCovariance(theta,dtable,draws)
         % this extracts the parameters for your specification
-        params1=extract_params(theta,draws);
+        params1=get_params(theta,draws);
         [dstar,Jac]=solveAllShares(dtable,draws,params1,method);
         [bhat,uhat]=ivregression(dstar,X,Z,W);
         g=bsxfun(@times,uhat,Z);
@@ -81,7 +85,7 @@ save first-step.mat
         SE=full(sqrt(diag(bread'*sand*bread)./n));
     end
 
-    function [gradstar]=myDerivCheck(func,theta0)
+    function myDerivCheck(func,theta0,deps)
         gradstar = zeros(size(theta0));
         for k=1:length(theta0)
            thetastarA = theta0;
@@ -91,5 +95,8 @@ save first-step.mat
            thetastarB(k) = thetastarB(k) - deps;
            gradstar(k) = (func(thetastarA) - func(thetastarB))./(2*deps);
         end
+        [fval,gval] = f(theta0);
+        disp(['Derivative Check:']);
+        disp(num2str([gval gradstar]));
     end
 end
