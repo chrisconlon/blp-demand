@@ -23,7 +23,7 @@ K=length(theta0);
 
 f = @(x)evalSingle(x);
 theta0 = [ones(K,1)];
-W=(Z'*Z)\eye(size(Z,2));
+W=inv(Z'*Z);
 
 % This bit just checks that the derivatives match the numeric ones
 myDerivCheck(f,theta0,1e-5)
@@ -77,29 +77,12 @@ save first-step.mat
         params1=get_params(theta,draws);
         [dstar,Jac]=solveAllShares(dtable,draws,params1,method);
         [bhat,uhat]=ivregression(dstar,X,Z,W);
+
         g=bsxfun(@times,uhat,Z);
-        S=inv(g'*g);
-        
+        gstar=bsxfun(@minus,g,mean(g));
+        S=inv(gstar'*gstar);
         G=Z'*[Jac X];
-        bread=inv(G'*W*G);
-        sand=(G'*W*S*W*G);
-        
-        % sqrt n comes from lack of 1/n term in S and W
-        SE=full(sqrt(diag(bread'*sand*bread)./n));
-    end
 
-    function myDerivCheck(func,theta0,deps)
-        gradstar = zeros(size(theta0));
-        for k=1:length(theta0)
-           thetastarA = theta0;
-           thetastarB = theta0;
-
-           thetastarA(k) = thetastarA(k) + deps;
-           thetastarB(k) = thetastarB(k) - deps;
-           gradstar(k) = (func(thetastarA) - func(thetastarB))./(2*deps);
-        end
-        [fval,gval] = f(theta0);
-        disp(['Derivative Check:']);
-        disp(num2str([gval gradstar]));
+        SE=full(sqrt(diag(inv(G'*S*G))));
     end
 end
