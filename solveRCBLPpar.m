@@ -46,7 +46,7 @@ save first-step.mat
     %this works much better if knitromatlab is installed
     function [fval,that,beta]=get_results(tableA,x0)
         % function handle f is mapped to evalsingle below for a (X,Z,W) 
-        if exists('knitromatlab'),
+        if exist('knitromatlab'),
             [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,[],[],ops);
         else,
             [that]=fmincon(f,x0,[],[],[],[],lb,ub,[],ops);
