@@ -1,5 +1,5 @@
 function [fval,gradstar]=finite_difference(func,theta0,deps)
-fval = func(theta);
+fval = func(theta0);
 gradstar = zeros(length(theta0),length(fval));
 
 for k=1:length(theta0)
