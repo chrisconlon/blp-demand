@@ -1,6 +1,6 @@
 function [fval2,thetaval2,betaval2,SE]=solveRCBLPpar(dtable,draws,theta0,extract_fun)
 % these can be modified
-ops=optimset('Display','iter' ,'Algorithm','Interior-Point','GradObj','on','DerivativeCheck','off');
+ops=optimset('Display','iter' ,'Algorithm','Interior-Point','GradObj','on','GradCon','off','DerivativeCheck','off', 'TolCon',1e-4);
 % This can be 'fixed-point' or 'newton': I recommend fixed-point.
 method = 'fixed-point';
 
@@ -47,9 +47,9 @@ save first-step.mat
     function [fval,that,beta]=get_results(tableA,x0)
         % function handle f is mapped to evalsingle below for a (X,Z,W) 
         if exist('knitromatlab'),
-            [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,[],[],ops);
+            [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,@micromoment_nograd,[],ops);
         else,
-            [that]=fmincon(f,x0,[],[],[],[],lb,ub,[],ops);
+            [that]=fmincon(f,x0,[],[],[],[],lb,ub,@micromoment_nograd,ops);
         end
         
         % After optimization recover the linear parameters and objective 
@@ -84,5 +84,11 @@ save first-step.mat
         G=Z'*[Jac X];
 
         SE=full(sqrt(diag(inv(G'*S*G))));
+    end
+
+    function [c,moments]=micromoment_nograd(x)
+        c=[];
+%        pp = get_params(x,draws);
+        [moments]=micromoments(dtable,draws,get_params(x,draws));
     end
 end
