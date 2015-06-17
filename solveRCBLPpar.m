@@ -26,15 +26,18 @@ theta0 = [ones(K,1)];
 W=inv(Z'*Z);
 
 % This bit just checks that the derivatives match the numeric ones
-myDerivCheck(f,theta0,1e-5)
+%myDerivCheck(f,theta0,1e-5)
 
 tic
 % first step
 [fval,thetaval,betaval]=get_results(dtable,theta0);
 
 % Lazy way to display key parameters (fix this later)
-thetaval
-betaval(1)
+disp(['Nonlinear Parameters: ']) 
+num2str(thetaval)
+
+disp(['Price Coefficient: ' num2str(betaval(1))])
+
 save first-step.mat
 
 % update weight matrix and produce second-step
@@ -47,9 +50,9 @@ save first-step.mat
     function [fval,that,beta]=get_results(tableA,x0)
         % function handle f is mapped to evalsingle below for a (X,Z,W) 
         if exist('knitromatlab'),
-            [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,@micromoment_nograd,[],ops);
+            [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,[],[],ops);
         else,
-            [that]=fmincon(f,x0,[],[],[],[],lb,ub,@micromoment_nograd,ops);
+            [that]=fmincon(f,x0,[],[],[],[],lb,ub,[],ops);
         end
         
         % After optimization recover the linear parameters and objective 
@@ -86,9 +89,4 @@ save first-step.mat
         SE=full(sqrt(diag(inv(G'*S*G))));
     end
 
-    function [c,moments]=micromoment_nograd(x)
-        c=[];
-%        pp = get_params(x,draws);
-        [moments]=micromoments(dtable,draws,get_params(x,draws));
-    end
 end
