@@ -1,4 +1,4 @@
-function [fval2,thetaval2,betaval2,SE]=solveRCBLPpar(dtable,draws,theta0,extract_fun)
+function [results2]=solveRCBLPpar(dtable,draws,theta0,extract_fun)
 % these can be modified
 ops=optimset('Display','iter' ,'Algorithm','Interior-Point','GradObj','on','GradCon','off','DerivativeCheck','off', 'TolCon',1e-4);
 % This can be 'fixed-point' or 'newton': I recommend fixed-point.
@@ -17,7 +17,7 @@ ub= init_param.ub;
 
 ns = length(draws.v);
 n=length(dtable.x1);
-X=[dtable.price dtable.x1];
+X=[ dtable.x1];
 Z=[dtable.x1 dtable.z];
 K=length(theta0);
 
@@ -30,24 +30,18 @@ W=inv(Z'*Z);
 
 tic
 % first step
-[fval,thetaval,betaval]=get_results(dtable,theta0);
-
-% Lazy way to display key parameters (fix this later)
-disp(['Nonlinear Parameters: ']) 
-num2str(thetaval)
-
-disp(['Price Coefficient: ' num2str(betaval(1))])
-
-save first-step.mat
+[results1]=get_results(dtable,theta0);
+print_results(results1);
 
 % update weight matrix and produce second-step
-[W]=getCovariance(thetaval,dtable,draws);
-[fval2,thetaval2,betaval2]=get_results(dtable,theta0);
-[S,SE]=getCovariance(thetaval2,dtable,draws);
+[W,~]=getCovariance(results1.theta,dtable,draws);
+[results2]=get_results(dtable,results1.theta);
+print_results(results2);
+toc
 
     %For a fixed weighting matrix (W) this minimizes the GMM objective
     %this works much better if knitromatlab is installed
-    function [fval,that,beta]=get_results(tableA,x0)
+    function [res]=get_results(tableA,x0)
         % function handle f is mapped to evalsingle below for a (X,Z,W) 
         if exist('knitromatlab'),
             [that]=knitromatlab(f,x0,[],[],[],[],lb,ub,[],[],ops);
@@ -61,6 +55,11 @@ save first-step.mat
         dtable.delta=delta;
         [beta,resid]=ivregression(delta,X,Z,W);
         fval=(resid'*Z)*W*(resid'*Z)';
+        
+        % Put the results into structure
+        [~,SEest]=getCovariance(that,dtable,draws);
+        res.fval = fval; res.beta=beta; res.theta = that; 
+        res.delta=delta; res.resid = resid; res.SE=full(SEest);
     end
     
     % evaluate the GMM objective and its gradient once
@@ -72,21 +71,21 @@ save first-step.mat
         [beta,resid]=ivregression(delta,X,Z,W);
         fval=(resid'*Z)*W*(resid'*Z)';
         g=-2*(Jac'*Z)*W*(resid'*Z)';
-        %disp(['Price Coeff: ' num2str(beta(1)) ' and f: ' num2str(fval)])
     end
 
-    function [S,SE]=getCovariance(theta,dtable,draws)
+    function [W2,SE]=getCovariance(theta,dtable,draws)
         % this extracts the parameters for your specification
         params1=get_params(theta,draws);
         [dstar,Jac]=solveAllShares(dtable,draws,params1,method);
         [bhat,uhat]=ivregression(dstar,X,Z,W);
 
         g=bsxfun(@times,uhat,Z);
-        gstar=bsxfun(@minus,g,mean(g));
-        S=inv(gstar'*gstar);
-        G=Z'*[Jac X];
-
-        SE=full(sqrt(diag(inv(G'*S*G))));
+        gstar=bsxfun(@minus,g,mean(g))./n;
+        S=gstar'*gstar;
+        G=Z'*[Jac X]./n;
+        
+        W2=inv(n.^2*S);
+        SE=sqrt(diag(inv(G'*W*G)*G'*W*S*W*G*inv(G'*W*G)));
     end
 
 end

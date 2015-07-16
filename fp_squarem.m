@@ -50,8 +50,9 @@ while((iter < p.Results.max_iter)  & (xchng > p.Results.con_tol)  )
     
     if(strcmp('contraction',p.Results.algorithm))
         xchng=mean(abs(x1-x));
-        x=x1;
-        %display([' Iteration ' num2str(iter) ' and ' num2str(xchng) ])
+        xnew=x1;
+        display([' Iteration ' num2str(iter) ' and ' num2str(xchng) ])
+        x=xnew;
         continue
     end
     q1=x1-x;
@@ -74,6 +75,7 @@ while((iter < p.Results.max_iter)  & (xchng > p.Results.con_tol)  )
     
     if(any(isnan(xnew)))
         display('Error')
+        xnew=x2;
     end
     if (alpha == stepmax)
         stepmax = p.Results.mstep*stepmax;

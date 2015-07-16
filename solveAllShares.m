@@ -18,10 +18,14 @@ if(strcmp(method,'newton')),
 elseif(strcmp(method,'fixed-point')),
     parfor i =1:max(dtable.mktid),
         mkt_i    = dtable(dtable.mktid==i,:);
+        % don't start with bad values!
+        if sum(~isfinite(mkt_i.delta)) > 0
+            mkt_i.delta = log(mkt_i.sjt)-log(mkt_i.s0t);
+        end
         % This is the BLP fixed point relation as a function handle
         f=@(x)(x + log(mkt_i.sjt) - log(rc_share_safe(x,params,draws,mkt_i)));
         % Call the SQUAREM routine of (Raeynerts, Varadayan and Nash)
-        [dhat]=fp_squarem(f,mkt_i.delta);
+        [dhat]=fp_squarem(f,mkt_i.delta,'algorithm','squarem');
         deltahat{i}=dhat;
         % this returns the Jacobian once after convergence (for the
         % gradient computation)
