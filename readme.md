@@ -1,5 +1,5 @@
 #BLP-Demand
-by Chris Conlon (cconlon@columbia.edu)
+by Chris Conlon (cconlon@stern.nyu.edu)
 
 This package contains a state of the art implementation of the Nested Fixed Point (NFP) approach
 estimating demand using approach of Berry Levinsohn and Pakes (1995) (BLP).
@@ -60,7 +60,7 @@ mode it returns both the delta and theta derivatives. In the 'sterr' mode it ret
 d s / d theta = [d s/ d delta]^-1 d s/d theta. For more information consult the appendix 
 to Nevo (2000).
 
-Copyright (c) 2014, Christopher T. Conlon (cconlon@columbia.edu)
+Copyright (c) 2014, Christopher T. Conlon (cconlon@stern.nyu.edu)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
