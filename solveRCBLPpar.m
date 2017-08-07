@@ -17,7 +17,7 @@ ub= init_param.ub;
 
 ns = length(draws.v);
 n=length(dtable.x1);
-X=[ dtable.x1];
+X=[dtable.price dtable.x1];
 Z=[dtable.x1 dtable.z];
 K=length(theta0);
 
