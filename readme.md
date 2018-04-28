@@ -19,6 +19,8 @@ See (https://github.com/jeffgortmaker/pyblp)
 
 
 
+### Package Description
+
 This package contains the following files
 
 ### extract_params.m: 
