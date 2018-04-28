@@ -13,7 +13,9 @@ The primary features are:
 - Can use either knitromatlab or fmincon (knitromatlab highly recommended)
 - Optimized for Matlab R2015a
 
-
+# Deprecated
+All current development is being done with Jeff Gortmakers pyblp package.
+See (https://github.com/jeffgortmaker/pyblp)
 
 
 
