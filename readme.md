@@ -1,5 +1,11 @@
-# BLP-Demand
+# BLP-Demand (Deprecated)
+All current development is being done with Jeff Gortmakers pyblp package.
+See (https://github.com/jeffgortmaker/pyblp)
+
 by Chris Conlon (cconlon@stern.nyu.edu)
+
+
+# This is recommended only for teaching purposes now -- please use pyBLP
 
 This package contains a state of the art implementation of the Nested Fixed Point (NFP) approach
 estimating demand using approach of Berry Levinsohn and Pakes (1995) (BLP).
@@ -13,9 +19,7 @@ The primary features are:
 - Can use either knitromatlab or fmincon (knitromatlab highly recommended)
 - Optimized for Matlab R2015a
 
-# Deprecated
-All current development is being done with Jeff Gortmakers pyblp package.
-See (https://github.com/jeffgortmaker/pyblp)
+
 
 
 
